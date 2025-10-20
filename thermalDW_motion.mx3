@@ -1,0 +1,53 @@
+/*****************************************************************  
+
+  Description: 
+   This mumax3 script simulates a thermal gradient driven domain
+   wall in a permalloy nanostrip.
+
+   This file is written for the mumax3 workshop organised for the 
+   spintronic seminar series in the summer of 2020. For more 
+   information go to https://www.mumax.ugent.be/mumax3-workshop
+  
+  Authors:
+
+   Dr. Jonathan Leliaert (jonathan.leliaert@ugent.be)
+   Dr. Jeroen Mulkers    (jeroen.mulkers@ugent.be)
+
+******************************************************************/
+
+SetMesh(256, 16, 1, 5e-09, 5.e-09, 20e-09, 0, 0, 0)
+Msat = 800e3
+Aex = 1e-11
+alpha = 0.1
+
+//define regions
+for i :=1;i<198;i++{
+	defregion(i,xrange(-640e-9+(i+1)*6.4e-9,-640e-9+(i+2)*6.4e-9))
+}
+
+//define thermal gradient and set thermal seed
+for i :=1;i<200;i++{
+	temp.setregion(i,200+i)
+}
+Thermseed(12345)
+
+m=twodomain(1,0,0, 0,1,0, -1,0,0)
+relax()
+
+//remove edge charges
+BoundaryRegion := 0
+MagLeft := 1
+MagRight := -1
+ext_rmSurfaceCharge(BoundaryRegion, MagLeft, MagRight)
+relax()
+
+//schedule output
+tableadd(ext_dwxpos)
+tableautosave(1e-10)
+
+//set solver withadaptive timestepping
+setsolver(5)
+fixdt=0
+
+run(5e-7)
+

@@ -1,0 +1,61 @@
+/*****************************************************************  
+
+  Description: 
+
+   This mumax3 script demonstartes how skyrmions move in a 
+   synthetic antiferromagnet consisting of 2 layers 
+
+   This file is written for the mumax3 workshop organised for the 
+   spintronic seminar series in the summer of 2020. For more 
+   information go to https://www.mumax.ugent.be/mumax3-workshop
+  
+  Authors:
+
+   Dr. Jonathan Leliaert (jonathan.leliaert@ugent.be)
+   Dr. Jeroen Mulkers    (jeroen.mulkers@ugent.be)
+
+******************************************************************/
+// Skyrmion racetrack 
+
+
+setgridsize(256,64,2)
+setcellsize(1e-9,1e-9,1e-9) 
+setpbc(4,0,0)
+    
+Msat = 580e3
+Aex = 15e-12
+Dind = 3.0e-3
+Ku1 = 0.8e6
+AnisU = vector(0,0,1)
+alpha = 0.1
+
+// define 2 layers
+defregion(1,layer(1))
+defregion(2,layer(0))
+
+
+//set negative interlayer exchange
+ext_InterExchange(1, 2, -5e-13)
+
+//define initial magnetization
+m.setregion(1,neelskyrmion(-1, 1).transl(-40e-9,0,0))
+m.setregion(2,neelskyrmion(1, -1).transl(-40e-9,0,0))
+
+Minimize()
+
+// define constants and set slonczewksi parameters
+SOTxi        := -2
+AlphaH       := 0.15
+Pol           = alphaH
+Lambda        = 1
+Epsilonprime  = alphaH*SOTxi/2
+Fixedlayer    = vector(0,-1,0)
+
+// define current
+J  = vector(0,0,2e11)
+
+autosave(m,1e-10)
+tableAutosave(1e-11)
+tableAdd(ext_bubblepos)
+    
+run(2e-9)

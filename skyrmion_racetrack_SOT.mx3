@@ -1,0 +1,63 @@
+/*****************************************************************  
+
+  Description: 
+
+   This mumax3 script demonstrates a skyrmion racetrack
+   driven by spin-orbit torques implemented using custom fields
+
+   This file is written for the mumax3 workshop organised for the 
+   spintronic seminar series in the summer of 2020. For more 
+   information go to https://www.mumax.ugent.be/mumax3-workshop
+  
+  Authors:
+
+   Dr. Jonathan Leliaert (jonathan.leliaert@ugent.be)
+   Dr. Jeroen Mulkers    (jeroen.mulkers@ugent.be)
+
+******************************************************************/
+
+setgridsize(256,64,1)
+setcellsize(1e-9,1e-9,1e-9) 
+setpbc(4,0,0)
+
+Msat = 580e3
+Aex = 15e-12
+Dind = 3.0e-3
+Ku1 = 0.8e6
+AnisU = vector(0,0,1)
+alpha = 0.1
+
+m = neelskyrmion(-1, 1).transl(-40e-9,0,0)
+minimize()
+
+
+//Define constants
+alphaH:=0.15
+e:=1.6021766e-19
+d:=1e-9
+Ms:=580e3
+hbar:=1.0545718e-34
+p:=Constvector(0,-1,0)
+SOTxi:=-2.0
+J_SOT:=abs(-2.e11)
+
+//Define prefactors aj and bj
+aj       := Const(J_SOT*(hbar/2.*alphaH/e/d/ms))
+bj       := Mul(aj,Const(SOTxi))
+
+// Add damping-like SOT term
+dampinglike := Mul(aj, Cross(m,p))
+AddFieldTerm(dampinglike)
+AddEdensTerm(Mul(Const(-0.5),Dot(dampinglike,M_full)))
+
+// Add field-like SOT term
+fieldlike:= Mul(bj,p)
+AddFieldTerm(fieldlike)
+AddEdensTerm(Mul(Const(-0.5),Dot(fieldlike,M_full)))
+
+autosave(m,1e-10)
+tableAutosave(1e-11)
+tableAdd(ext_bubblepos)
+
+run(2.5e-9)
+

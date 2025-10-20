@@ -1,0 +1,54 @@
+/*****************************************************************  
+
+  Description: 
+
+   This mumax3 script demonstrates a skyrmion racetrack
+   driven by spin-orbit torques implemented using the existing
+   slonczewski spin transfer torque implementation
+
+   This file is written for the mumax3 workshop organised for the 
+   spintronic seminar series in the summer of 2020. For more 
+   information go to https://www.mumax.ugent.be/mumax3-workshop
+  
+  Authors:
+
+   Dr. Jonathan Leliaert (jonathan.leliaert@ugent.be)
+   Dr. Jeroen Mulkers    (jeroen.mulkers@ugent.be)
+
+******************************************************************/
+
+// Skyrmion racetrack 
+
+
+setgridsize(256,64,1)
+setcellsize(1e-9,1e-9,1e-9) 
+setpbc(4,0,0)
+    
+Msat = 580e3
+Aex = 15e-12
+Dind = 3.0e-3
+Ku1 = 0.8e6
+AnisU = vector(0,0,1)
+alpha = 0.1
+
+m = neelskyrmion(-1, 1).transl(-40e-9,0,0)
+minimize()
+    
+//Add SOT
+//define constants and set slonczewksi parameters
+SOTxi        := -2
+AlphaH       := 0.15
+Pol           = alphaH
+Lambda        = 1
+Epsilonprime  = alphaH*SOTxi/2
+Fixedlayer    = vector(0,-1,0)       //p
+
+//define current
+J             = vector(0,0,abs(-2e11))   //in z-direction
+
+autosave(m,1e-10)
+tableAutosave(1e-11)
+tableAdd(ext_bubblepos)
+   
+
+run(2.5e-9)

@@ -1,0 +1,80 @@
+/*****************************************************************  
+
+  Description: 
+
+   This mumax3 script demonstrates the creep motion of domain
+   walls in the presence of a driving force, thermal fluctuations,
+   and material disorder.
+
+   This file is written for the mumax3 workshop organised for the 
+   spintronic seminar series in the summer of 2020. For more 
+   information go to https://www.mumax.ugent.be/mumax3-workshop
+  
+  Authors:
+
+   Dr. Jonathan Leliaert (jonathan.leliaert@ugent.be)
+   Dr. Jeroen Mulkers    (jeroen.mulkers@ugent.be)
+
+******************************************************************/
+
+SetMesh(128, 32, 1, 3.125e-09, 3.125e-09, 10e-09, 0, 0, 0)
+Msat = 800e3
+Aex = 1e-11
+alpha = 0.1
+
+m=twodomain(1,0,0,  0,1,0,  -1,0,0) 
+
+//remove edge charges
+BoundaryRegion := 0
+MagLeft        := 1
+MagRight       := -1
+ext_rmSurfaceCharge(BoundaryRegion, MagLeft, MagRight)
+
+relax()
+
+// define grains with region number 0-255
+grainSize  := 40e-9  
+randomSeed := 1234567
+maxRegion  := 255
+ext_makegrains(grainSize, maxRegion, randomSeed)
+
+// set random anisotropy per region
+for i:=0; i<maxRegion; i++{
+	// random uniaxial anisotropy direction on the unit sphere
+	axis  := vector(randNorm(), randNorm(), randNorm())
+	// note: axes are normalized by mumax
+	AnisU.SetRegion(i, axis)     
+
+	// random 10% anisotropy variation
+	K := 1e3
+	Ku1.SetRegion(i, K + randNorm() * 0.1 * K)
+}
+
+// reduce exchange coupling between grains by 10%
+for i:=0; i<maxRegion; i++{
+	for j:=i+1; j<maxRegion; j++{
+		ext_ScaleExchange(i, j, 0.9)
+	}
+}
+
+//set temperature and solver with adaptive timestepping
+
+temp=300
+Thermseed(12345) 
+setsolver(5)
+fixdt=0
+
+//driving force: spin transfer torque
+Pol=0.4
+xi=0.2
+j=vector(-1e12,0,0)
+
+//keep wall centered: moving window
+ext_centerwall(0)
+
+//schedule output 
+tableadd(ext_dwxpos)
+tableautosave(1e-10) 
+
+
+run(5e-7)

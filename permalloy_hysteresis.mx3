@@ -1,0 +1,53 @@
+/*****************************************************************  
+
+  Description: 
+   This mumax3 script computes the hysteresis curve of a 
+   rectangular permalloy film.
+
+   This file is written for the mumax3 workshop organised for the 
+   spintronic seminar series in the summer of 2020. For more 
+   information go to https://www.mumax.ugent.be/mumax3-workshop
+  
+  Authors:
+
+   Dr. Jonathan Leliaert (jonathan.leliaert@ugent.be)
+   Dr. Jeroen Mulkers    (jeroen.mulkers@ugent.be)
+
+******************************************************************/
+
+SetGridsize(192,384, 1)
+SetCellsize(1000e-9/192,2000e-9/384,Â  20e-9)
+
+Msat  = 800e3
+Aex   = 13e-12
+alpha = 0.02
+Ku1   = 5e2
+anisu = vector(0,1,0)
+
+m = uniform(-0.1,-1,0)
+
+angle  := pi/180  //1 degree
+B_ext   = vector( -0.05*sin(angle) , -0.05*cos(angle) , 0)
+tableadd(B_ext)
+relax()
+
+B_min  := -0.05
+B_max  :=  0.05
+B_step :=  0.0005
+
+//ramp the field up
+for B:=B_min; B<=B_max; B+=B_step {
+    B_ext = vector(B*sin(angle), B*cos(angle), 0)
+    minimize()
+    tablesave()
+    snapshot(m)
+}
+
+//ramp the field down
+for B:=B_max; B>=B_min; B-=B_step {
+    B_ext = vector(B*sin(angle), B*cos(angle), 0)
+    minimize()
+    tablesave()
+    snapshot(m)
+}
+
